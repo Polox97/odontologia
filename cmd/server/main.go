@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/joho/godotenv"
 	"log"
+	"os"
 	"database/sql"
 
 	"github.com/Polox97/odontologia/cmd/server/handler"
@@ -18,7 +19,13 @@ func main() {
 		log.Fatal("Error al intentar cargar archivo .env")
 	}
 
-	db, err := sql.Open("mysql", "root:root@/sistemaTurnos")
+	user := os.Getenv("USER_DB")
+	password := os.Getenv("PASSWORD_DB")
+	dataBase := os.Getenv("DB")
+
+	rute := user + ":" + password + "@/" + dataBase
+
+	db, err := sql.Open("mysql", rute)
 	if err != nil {
 		panic(err.Error())
 	}

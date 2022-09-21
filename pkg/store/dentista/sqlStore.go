@@ -12,9 +12,9 @@ type StoreInterface interface {
 	// ReadAll devuelve todos los dentistas
 	ReadAll() ([]domain.Dentista, error)
 	// Create agrega un nuevo dentista
-	Create(product domain.Dentista) error
+	Create(dentista domain.Dentista) error
 	// Update actualiza un dentista
-	Update(product domain.Dentista) error
+	Update(dentista domain.Dentista) error
 	// Delete elimina un dentista
 	Delete(id int) error
 	// Exists verifica si un dentista existe
