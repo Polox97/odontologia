@@ -6,7 +6,7 @@ import (
 	"github.com/Polox97/odontologia/internal/domain"
 )
 
-type StoreInterface interface {
+type StoreInterfaceDentista interface {
 	// Read devuelve un dentista por su id
 	Read(id int) (domain.Dentista, error)
 	// ReadAll devuelve todos los dentistas
@@ -21,17 +21,17 @@ type StoreInterface interface {
 	Exists(matricula string) bool
 }
 
-type sqlStore struct {
+type sqlStoreD struct {
 	db *sql.DB
 }
 
-func NewSqlStore(db *sql.DB) StoreInterface {
-	return &sqlStore{
+func NewSqlStoreDentista(db *sql.DB) StoreInterfaceDentista {
+	return &sqlStoreD{
 		db: db,
 	}
 }
 
-func (s *sqlStore) Read(id int) (domain.Dentista, error) {
+func (s *sqlStoreD) Read(id int) (domain.Dentista, error) {
 	var dentista domain.Dentista
 	query := "SELECT * FROM dentistas WHERE id = ?;"
 	row := s.db.QueryRow(query, id)
@@ -42,7 +42,7 @@ func (s *sqlStore) Read(id int) (domain.Dentista, error) {
 	return dentista, nil
 }
 
-func (s *sqlStore) ReadAll() ([]domain.Dentista, error) {
+func (s *sqlStoreD) ReadAll() ([]domain.Dentista, error) {
 	query := "SELECT * FROM dentistas"
 	rows, err := s.db.Query(query)
 	var dentistas []domain.Dentista
@@ -58,7 +58,7 @@ func (s *sqlStore) ReadAll() ([]domain.Dentista, error) {
 	return dentistas, nil
 }
 
-func (s *sqlStore) Create(dentista domain.Dentista) error {
+func (s *sqlStoreD) Create(dentista domain.Dentista) error {
 	query := "INSERT INTO dentistas (matricula, nombre, apellido) VALUES (?, ?, ?);"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -75,7 +75,7 @@ func (s *sqlStore) Create(dentista domain.Dentista) error {
 	return nil
 }
 
-func (s *sqlStore) Update(dentista domain.Dentista) error {
+func (s *sqlStoreD) Update(dentista domain.Dentista) error {
 	query := "UPDATE dentistas SET matricula = ?, nombre = ?, apellido = ? WHERE id = ?;"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -92,7 +92,7 @@ func (s *sqlStore) Update(dentista domain.Dentista) error {
 	return nil
 }
 
-func (s *sqlStore) Delete(id int) error {
+func (s *sqlStoreD) Delete(id int) error {
 	query := "DELETE FROM dentistas WHERE id = ?;"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -109,7 +109,7 @@ func (s *sqlStore) Delete(id int) error {
 	return nil
 }
 
-func (s *sqlStore) Exists(matricula string) bool {
+func (s *sqlStoreD) Exists(matricula string) bool {
 	var exists bool
 	var id int
 	query := "SELECT id FROM dentistas WHERE matricula = ?;"

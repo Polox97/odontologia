@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/Polox97/odontologia/internal/domain"
-	"github.com/Polox97/odontologia/pkg/store/dentista"
+	"github.com/Polox97/odontologia/pkg/store"
 )
 
 type Repository interface {
@@ -16,7 +16,7 @@ type Repository interface {
 }
 
 type repository struct {
-	storage store.StoreInterface
+	storage store.StoreInterfaceDentista
 }
 
 func (r *repository) Create(d domain.Dentista) (domain.Dentista, error) {
@@ -65,6 +65,6 @@ func (r *repository) Update(id int, d domain.Dentista) (domain.Dentista, error) 
 	return d, nil
 }
 
-func NewRepository(storage store.StoreInterface) Repository {
+func NewRepository(storage store.StoreInterfaceDentista) Repository {
 	return &repository{storage}
 }

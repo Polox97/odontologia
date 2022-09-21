@@ -6,7 +6,7 @@ import (
 	"github.com/Polox97/odontologia/internal/domain"
 )
 
-type StoreInterface interface {
+type StoreInterfacePaciente interface {
 	// Read devuelve un paciente por su id
 	Read(id int) (domain.Paciente, error)
 	// ReadAll devuelve todos los pacientes
@@ -21,17 +21,17 @@ type StoreInterface interface {
 	Exists(dni string) bool
 }
 
-type sqlStore struct {
+type sqlStoreP struct {
 	db *sql.DB
 }
 
-func NewSqlStore(db *sql.DB) StoreInterface {
-	return &sqlStore{
+func NewSqlStorePaciente(db *sql.DB) StoreInterfacePaciente {
+	return &sqlStoreP{
 		db: db,
 	}
 }
 
-func (s *sqlStore) Read(id int) (domain.Paciente, error) {
+func (s *sqlStoreP) Read(id int) (domain.Paciente, error) {
 	var paciente domain.Paciente
 	query := "SELECT * FROM pacientes WHERE id = ?;"
 	row := s.db.QueryRow(query, id)
@@ -42,7 +42,7 @@ func (s *sqlStore) Read(id int) (domain.Paciente, error) {
 	return paciente, nil
 }
 
-func (s *sqlStore) ReadAll() ([]domain.Paciente, error) {
+func (s *sqlStoreP) ReadAll() ([]domain.Paciente, error) {
 	query := "SELECT * FROM pacientes"
 	rows, err := s.db.Query(query)
 	var pacientes []domain.Paciente
@@ -58,13 +58,13 @@ func (s *sqlStore) ReadAll() ([]domain.Paciente, error) {
 	return pacientes, nil
 }
 
-func (s *sqlStore) Create(paciente domain.Paciente) error {
-	query := "INSERT INTO pacientes (dni, nombre, apellido, domicilio, fecha_alta) VALUES (?, ?, ?, ?, ?);"
+func (s *sqlStoreP) Create(paciente domain.Paciente) error {
+	query := "INSERT INTO pacientes (dni, nombre, apellido, domicilio) VALUES (?, ?, ?, ?);"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
 		return err
 	}
-	res, err := stmt.Exec(paciente.DNI, paciente.Nombre, paciente.Apellido, paciente.Domicilio, paciente.FechaAlta)
+	res, err := stmt.Exec(paciente.DNI, paciente.Nombre, paciente.Apellido, paciente.Domicilio)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (s *sqlStore) Create(paciente domain.Paciente) error {
 	return nil
 }
 
-func (s *sqlStore) Update(paciente domain.Paciente) error {
+func (s *sqlStoreP) Update(paciente domain.Paciente) error {
 	query := "UPDATE pacientes SET dni = ?, nombre = ?, apellido = ?, domicilio = ?, fecha_alta = ? WHERE id = ?;"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -92,7 +92,7 @@ func (s *sqlStore) Update(paciente domain.Paciente) error {
 	return nil
 }
 
-func (s *sqlStore) Delete(id int) error {
+func (s *sqlStoreP) Delete(id int) error {
 	query := "DELETE FROM pacientes WHERE id = ?;"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -109,7 +109,7 @@ func (s *sqlStore) Delete(id int) error {
 	return nil
 }
 
-func (s *sqlStore) Exists(dni string) bool {
+func (s *sqlStoreP) Exists(dni string) bool {
 	var exists bool
 	var id int
 	query := "SELECT id FROM dentistas WHERE dni = ?;"

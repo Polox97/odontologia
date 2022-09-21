@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/Polox97/odontologia/internal/domain"
-	"github.com/Polox97/odontologia/pkg/store/paciente"
+	"github.com/Polox97/odontologia/pkg/store"
 )
 
 type Repository interface {
@@ -16,7 +16,7 @@ type Repository interface {
 }
 
 type repository struct {
-	storage store.StoreInterface
+	storage store.StoreInterfacePaciente
 }
 
 func (r *repository) Create(d domain.Paciente) (domain.Paciente, error) {
@@ -55,7 +55,7 @@ func (r *repository) GetByID(id int) (domain.Paciente, error) {
 }
 
 func (r *repository) Update(id int, d domain.Paciente) (domain.Paciente, error) {
-	if !r.storage.Exists(d.DNI) {
+	if r.storage.Exists(d.DNI) {
 		return domain.Paciente{}, errors.New("dni not exists")
 	}
 	err := r.storage.Update(d)
@@ -65,6 +65,6 @@ func (r *repository) Update(id int, d domain.Paciente) (domain.Paciente, error) 
 	return d, nil
 }
 
-func NewRepository(storage store.StoreInterface) Repository {
+func NewRepository(storage store.StoreInterfacePaciente) Repository {
 	return &repository{storage}
 }
