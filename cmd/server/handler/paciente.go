@@ -5,36 +5,37 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/Polox97/odontologia/internal/dentista"
 	"github.com/Polox97/odontologia/internal/domain"
+	"github.com/Polox97/odontologia/internal/paciente"
 	"github.com/Polox97/odontologia/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
-type dentistaHandler struct {
-	s dentista.Service
+type pacienteHandler struct {
+	s paciente.Service
 }
 
-// NewProductHandler crea un nuevo controller de dentista
-func NewDentistaHandler(s dentista.Service) *dentistaHandler {
-	return &dentistaHandler{
+// NewProductHandler crea un nuevo controller de paciente
+func NewPacienteHandler(s paciente.Service) *pacienteHandler {
+	return &pacienteHandler{
 		s: s,
 	}
 }
-// GetAll obtiene todos los dentistas
-func (h *dentistaHandler) GetAll() gin.HandlerFunc {
+
+// GetAll obtiene todos los pacientes
+func (h *pacienteHandler) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		dentistas, err := h.s.GetAll()
+		pacientes, err := h.s.GetAll()
 		if err != nil {
-			web.Failure(c, 404, errors.New("dentist not found"))
+			web.Failure(c, 404, errors.New("patient not found"))
 			return
 		}
-		web.Success(c, 200, dentistas)
+		web.Success(c, 200, pacientes)
 	}
 }
 
-// Get obtiene un dentista por id
-func (h *dentistaHandler) GetByID() gin.HandlerFunc {
+// Get obtiene un paciente por id
+func (h *pacienteHandler) GetByID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")
 		id, err := strconv.Atoi(idParam)
@@ -42,28 +43,28 @@ func (h *dentistaHandler) GetByID() gin.HandlerFunc {
 			web.Failure(c, 400, errors.New("invalid id"))
 			return
 		}
-		product, err := h.s.GetByID(id)
+		paciente, err := h.s.GetByID(id)
 		if err != nil {
-			web.Failure(c, 404, errors.New("dentist not found"))
+			web.Failure(c, 404, errors.New("paciente not found"))
 			return
 		}
-		web.Success(c, 200, product)
+		web.Success(c, 200, paciente)
 	}
 }
 
 // validateEmptys valida que los campos no esten vacios
-func validateEmptyDentista(dentista *domain.Dentista) (bool, error) {
+func validateEmptysPaciente(paciente *domain.Paciente) (bool, error) {
 	switch {
-	case dentista.Matricula == "" || dentista.Nombre == "" || dentista.Apellido == "":
+	case paciente.DNI == "" || paciente.Nombre == "" || paciente.Apellido == "" || paciente.Domicilio == "":
 		return false, errors.New("fields can't be empty")
 	}
 	return true, nil
 }
 
-// Post crea un nuevo dentista
-func (h *dentistaHandler) Post() gin.HandlerFunc {
+// Post crea un nuevo paciente
+func (h *pacienteHandler) Post() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var dentista domain.Dentista
+		var paciente domain.Paciente
 		token := c.GetHeader("TOKEN")
 		if token == "" {
 			web.Failure(c, 401, errors.New("token not found"))
@@ -73,17 +74,17 @@ func (h *dentistaHandler) Post() gin.HandlerFunc {
 			web.Failure(c, 401, errors.New("invalid token"))
 			return
 		}
-		err := c.ShouldBindJSON(&dentista)
+		err := c.ShouldBindJSON(&paciente)
 		if err != nil {
 			web.Failure(c, 400, errors.New("invalid json"))
 			return
 		}
-		valid, err := validateEmptyDentista(&dentista)
+		valid, err := validateEmptysPaciente(&paciente)
 		if !valid {
 			web.Failure(c, 400, err)
 			return
 		}
-		p, err := h.s.Create(dentista)
+		p, err := h.s.Create(paciente)
 		if err != nil {
 			web.Failure(c, 400, err)
 			return
@@ -92,8 +93,8 @@ func (h *dentistaHandler) Post() gin.HandlerFunc {
 	}
 }
 
-// Delete elimina un dentista
-func (h *dentistaHandler) Delete() gin.HandlerFunc {
+// Delete elimina un paciente
+func (h *pacienteHandler) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("TOKEN")
 		if token == "" {
@@ -119,8 +120,8 @@ func (h *dentistaHandler) Delete() gin.HandlerFunc {
 	}
 }
 
-// Put actualiza un dentista
-func (h *dentistaHandler) Put() gin.HandlerFunc {
+// Put actualiza un paciente
+func (h *pacienteHandler) Put() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("TOKEN")
 		if token == "" {
@@ -139,25 +140,25 @@ func (h *dentistaHandler) Put() gin.HandlerFunc {
 		}
 		_, err = h.s.GetByID(id)
 		if err != nil {
-			web.Failure(c, 404, errors.New("dentist not found"))
+			web.Failure(c, 404, errors.New("patient not found"))
 			return
 		}
 		if err != nil {
 			web.Failure(c, 409, err)
 			return
 		}
-		var dentista domain.Dentista
-		err = c.ShouldBindJSON(&dentista)
+		var paciente domain.Paciente
+		err = c.ShouldBindJSON(&paciente)
 		if err != nil {
 			web.Failure(c, 400, errors.New("invalid json"))
 			return
 		}
-		valid, err := validateEmptyDentista(&dentista)
+		valid, err := validateEmptysPaciente(&paciente)
 		if !valid {
 			web.Failure(c, 400, err)
 			return
 		}
-		p, err := h.s.Update(id, dentista)
+		p, err := h.s.Update(id, paciente)
 		if err != nil {
 			web.Failure(c, 409, err)
 			return
@@ -166,12 +167,13 @@ func (h *dentistaHandler) Put() gin.HandlerFunc {
 	}
 }
 
-// Patch actualiza un dentista o alguno de sus campos
-func (h *dentistaHandler) Patch() gin.HandlerFunc {
+// Patch actualiza un paciente o alguno de sus campos
+func (h *pacienteHandler) Patch() gin.HandlerFunc {
 	type Request struct {
-		Matricula string `json:"matricula,omitempty"`
+		DNI       string `json:"dni,omitempty"`
 		Nombre    string `json:"nombre,omitempty"`
 		Apellido  string `json:"apellido,omitempty"`
+		Domicilio string `json:"domicilio,omitempty"`
 	}
 	return func(c *gin.Context) {
 		token := c.GetHeader("TOKEN")
@@ -192,17 +194,18 @@ func (h *dentistaHandler) Patch() gin.HandlerFunc {
 		}
 		_, err = h.s.GetByID(id)
 		if err != nil {
-			web.Failure(c, 404, errors.New("dentist not found"))
+			web.Failure(c, 404, errors.New("product not found"))
 			return
 		}
 		if err := c.ShouldBindJSON(&r); err != nil {
 			web.Failure(c, 400, errors.New("invalid json"))
 			return
 		}
-		update := domain.Dentista{
-			Matricula: r.Matricula,
+		update := domain.Paciente{
+			DNI: r.DNI,
 			Nombre:    r.Nombre,
 			Apellido:  r.Apellido,
+			Domicilio: r.Domicilio,
 		}
 		p, err := h.s.Update(id, update)
 		if err != nil {
