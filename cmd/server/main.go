@@ -7,9 +7,10 @@ import (
 	"database/sql"
 
 	"github.com/Polox97/odontologia/cmd/server/handler"
-	"github.com/Polox97/odontologia/internal/dentista"
 	"github.com/Polox97/odontologia/pkg/store"
+	"github.com/Polox97/odontologia/internal/dentista"
 	"github.com/Polox97/odontologia/internal/paciente"
+	"github.com/Polox97/odontologia/internal/turno"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -37,6 +38,7 @@ func main() {
 
 	dStorage := store.NewSqlStoreDentista(db)
 	pStorage := store.NewSqlStorePaciente(db)
+	tStorage := store.NewSqlStoreTurno(db)
 
 	dRepo := dentista.NewRepository(dStorage)
 	dService := dentista.NewService(dRepo)
@@ -45,6 +47,10 @@ func main() {
 	pRepo := paciente.NewRepository(pStorage)
 	pService := paciente.NewService(pRepo)
 	pacienteHandler := handler.NewPacienteHandler(pService)
+
+	tRepo := turno.NewRepository(tStorage)
+	tService := turno.NewService(tRepo)
+	turnoHandler := handler.NewTurnoHandler(tService)
 
 	r := gin.Default()
 
@@ -67,6 +73,16 @@ func main() {
 		pacientes.DELETE(":id", pacienteHandler.Delete())
 		pacientes.PATCH(":id", pacienteHandler.Patch())
 		pacientes.PUT(":id", pacienteHandler.Put())
+	}
+
+	turnos := r.Group("/turnos")
+	{
+		turnos.GET("", turnoHandler.GetAll())
+		turnos.GET(":id", turnoHandler.GetByID())
+		turnos.POST("", turnoHandler.Post())
+		turnos.DELETE(":id", turnoHandler.Delete())
+		turnos.PATCH(":id", turnoHandler.Patch())
+		turnos.PUT(":id", turnoHandler.Put())
 	}
 
 	r.Run(":8080")

@@ -76,7 +76,7 @@ func (s *sqlStoreT) ReadAll() ([]domain.Turno, error) {
 }
 
 func (s *sqlStoreT) Create(turno domain.Turno) error {
-	query := "INSERT INTO turnos (paciente_id, dentista_id, fecha_hora, descripcion) VALUES (?, ?);"
+	query := "INSERT INTO turnos (paciente_id, dentista_id, fecha_hora, descripcion) VALUES (?, ?, ?, ?);"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
 		return err

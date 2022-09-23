@@ -59,11 +59,11 @@ func (r *repository) GetByID(id int) (domain.Turno, error) {
 
 func (r *repository) Update(id int, d domain.Turno) (domain.Turno, error) {
 	if r.storage.Exists(d.ID) {
-		return domain.Turno{}, errors.New("dni not exists")
+		return domain.Turno{}, errors.New("turno not exists")
 	}
 	err := r.storage.Update(d)
 	if err != nil {
-		return domain.Turno{}, errors.New("error updating patient")
+		return domain.Turno{}, errors.New("error updating turno")
 	}
 	return d, nil
 }
