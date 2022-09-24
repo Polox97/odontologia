@@ -10,7 +10,7 @@ type StoreInterfaceTurno interface {
 	// Read devuelve un turno por su id
 	Read(id int) (domain.Turno, error)
 	// Read devuelve los turnos de un paciente por su dni
-	//ReadPaciente(dni string) ([]domain.Turno, error)
+	ReadPaciente(dni string) ([]domain.TurnoResponse, error)
 	// ReadAll devuelve todos los turnos
 	ReadAll() ([]domain.Turno, error)
 	// Create agrega un nuevo turno
@@ -41,23 +41,39 @@ func (s *sqlStoreT) Read(id int) (domain.Turno, error) {
 	var turno domain.Turno
 	query := "SELECT * FROM turnos WHERE id = ?;"
 	row := s.db.QueryRow(query, id)
-	err := row.Scan(&turno.ID, &turno.PacienteID, &turno.DentistaID, &turno.Descripcion, &turno.FechaHora)
+	err := row.Scan(&turno.ID, &turno.PacienteID, &turno.DentistaID, &turno.FechaHora, &turno.Descripcion)
 	if err != nil {
 		return domain.Turno{}, err
 	}
 	return turno, nil
 }
 
-/*func (s *sqlStoreT) ReadPaciente(dni string) ([]domain.Turno, error) {
-	var turno domain.Turno
-	query := "SELECT * FROM turnos WHERE paciente_id = ?;"
-	row := s.db.QueryRow(query, dni)
-	err := row.Scan(&turno.ID, &turno.PacienteID, &turno.DentistaID, &turno.Descripcion, &turno.FechaHora)
-	if err != nil {
-		return domain.Turno{}, err
+func (s *sqlStoreT) ReadPaciente(dni string) ([]domain.TurnoResponse, error) {
+	query := "SELECT t.id, t.fecha_hora, t.descripcion, p.dni, p.nombre, p.apellido, p.domicilio, d.matricula, d.nombre, d.apellido from turnos t INNER JOIN pacientes p on p.id = t.paciente_id INNER JOIN dentistas d on d.id = t.dentista_id WHERE p.dni = ?;"
+	rows, err := s.db.Query(query, dni)
+	var turnos []domain.TurnoResponse
+
+	for rows.Next() {
+		turno := domain.TurnoResponse{}
+		err = rows.Scan(
+			&turno.ID,
+			&turno.FechaHora, 
+			&turno.Descripcion, 
+			&turno.PacienteID.DNI, 
+			&turno.PacienteID.Nombre, 
+			&turno.PacienteID.Apellido, 
+			&turno.PacienteID.Domicilio,
+			&turno.DentistaID.Matricula, 
+			&turno.DentistaID.Nombre, 
+			&turno.DentistaID.Apellido)
+
+		turnos = append(turnos, turno)
 	}
-	return turno, nil
-}*/
+	if err != nil {
+		return []domain.TurnoResponse{}, err
+	}
+	return turnos, nil
+}
 
 func (s *sqlStoreT) ReadAll() ([]domain.Turno, error) {
 	query := "SELECT * FROM turnos"
@@ -66,7 +82,7 @@ func (s *sqlStoreT) ReadAll() ([]domain.Turno, error) {
 
 	for rows.Next() {
 		turno := domain.Turno{}
-		err = rows.Scan(&turno.ID, &turno.PacienteID, &turno.DentistaID, &turno.Descripcion, &turno.FechaHora)
+		err = rows.Scan(&turno.ID, &turno.PacienteID, &turno.DentistaID, &turno.FechaHora, &turno.Descripcion)
 		turnos = append(turnos, turno)
 	}
 	if err != nil {

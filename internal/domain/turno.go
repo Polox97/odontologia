@@ -7,3 +7,11 @@ type Turno struct {
 	FechaHora   string `json:"fecha_hora"`
 	Descripcion string `json:"descripcion"`
 }
+
+type TurnoResponse struct {
+	ID          int              `json:"id"`
+	FechaHora   string           `json:"fecha_hora"`
+	Descripcion string           `json:"descripcion"`
+	PacienteID  PacienteResponse `json:"paciente"`
+	DentistaID  DentistaResponse `json:"dentista"`
+}

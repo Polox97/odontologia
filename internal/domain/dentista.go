@@ -6,3 +6,9 @@ type Dentista struct {
 	Nombre    string `json:"nombre"`
 	Apellido  string `json:"apellido"`
 }
+
+type DentistaResponse struct {
+	Matricula string `json:"matricula"`
+	Nombre    string `json:"nombre"`
+	Apellido  string `json:"apellido"`
+}

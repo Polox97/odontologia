@@ -10,6 +10,7 @@ import (
 type Repository interface {
 	GetAll() ([]domain.Turno, error)
 	GetByID(id int) (domain.Turno, error)
+	GetPaciente(dni string) ([]domain.TurnoResponse, error)
 	Create(p domain.Turno) (domain.Turno, error)
 	Update(id int, p domain.Turno) (domain.Turno, error)
 	Delete(id int) error
@@ -55,6 +56,14 @@ func (r *repository) GetByID(id int) (domain.Turno, error) {
 		return domain.Turno{}, errors.New("turno not found")
 	}
 	return turno, nil
+}
+
+func (r *repository) GetPaciente(dni string) ([]domain.TurnoResponse, error) {
+	turnos, err := r.storage.ReadPaciente(dni)
+	if err != nil {
+		return []domain.TurnoResponse{}, err
+	}
+	return turnos, nil
 }
 
 func (r *repository) Update(id int, d domain.Turno) (domain.Turno, error) {

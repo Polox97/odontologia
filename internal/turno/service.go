@@ -9,6 +9,8 @@ type Service interface {
 	GetAll() ([]domain.Turno, error)
 	// GetByID busca un turno por su id
 	GetByID(id int) (domain.Turno, error)
+	// GetAll busca todos los turnos
+	GetPaciente(dni string) ([]domain.TurnoResponse, error)
 	// Create agrega un nuevo turno
 	Create(p domain.Turno) (domain.Turno, error)
 	// Delete elimina un turno
@@ -38,6 +40,14 @@ func (s *service) GetByID(id int) (domain.Turno, error) {
 	t, err := s.r.GetByID(id)
 	if err != nil {
 		return domain.Turno{}, err
+	}
+	return t, nil
+}
+
+func (s *service) GetPaciente(dni string) ([]domain.TurnoResponse, error) {
+	t, err := s.r.GetPaciente(dni)
+	if err != nil {
+		return []domain.TurnoResponse{}, err
 	}
 	return t, nil
 }

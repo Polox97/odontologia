@@ -52,6 +52,18 @@ func (h *turnoHandler) GetByID() gin.HandlerFunc {
 	}
 }
 
+func (h *turnoHandler) GetPaciente() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idParam := c.Param("id")
+		turno, err := h.s.GetPaciente(idParam)
+		if err != nil {
+			web.Failure(c, 404, errors.New("paciente not found"))
+			return
+		}
+		web.Success(c, 200, turno)
+	}
+}
+
 // validateEmptys valida que los campos no esten vacios
 func validateEmptysTurnos(turno *domain.Turno) (bool, error) {
 	switch {
