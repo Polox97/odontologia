@@ -5,27 +5,27 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/Polox97/odontologia/internal/domain"
-	"github.com/Polox97/odontologia/internal/paciente"
+	pacienteUCI "github.com/Polox97/odontologia/interface/pacienteucinterface"
+	pacienteModel "github.com/Polox97/odontologia/model/paciente"
 	"github.com/Polox97/odontologia/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
 type pacienteHandler struct {
-	s paciente.Service
+	pacienteUCI.PacienteUCI
 }
 
 // NewProductHandler crea un nuevo controller de paciente
-func NewPacienteHandler(s paciente.Service) *pacienteHandler {
+func NewPacienteHandler(pacienteUCInterface pacienteUCI.PacienteUCI) *pacienteHandler {
 	return &pacienteHandler{
-		s: s,
+		pacienteUCInterface,
 	}
 }
 
 // GetAll obtiene todos los pacientes
 func (h *pacienteHandler) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		pacientes, err := h.s.GetAll()
+		pacientes, err := h.GetAllPacientes()
 		if err != nil {
 			web.Failure(c, 404, errors.New("patient not found"))
 			return
@@ -43,7 +43,7 @@ func (h *pacienteHandler) GetByID() gin.HandlerFunc {
 			web.Failure(c, 400, errors.New("invalid id"))
 			return
 		}
-		paciente, err := h.s.GetByID(id)
+		paciente, err := h.GetPacienteByID(id)
 		if err != nil {
 			web.Failure(c, 404, errors.New("paciente not found"))
 			return
@@ -53,7 +53,7 @@ func (h *pacienteHandler) GetByID() gin.HandlerFunc {
 }
 
 // validateEmptys valida que los campos no esten vacios
-func validateEmptysPaciente(paciente *domain.Paciente) (bool, error) {
+func validateEmptysPaciente(paciente *pacienteModel.Paciente) (bool, error) {
 	switch {
 	case paciente.DNI == "" || paciente.Nombre == "" || paciente.Apellido == "" || paciente.Domicilio == "":
 		return false, errors.New("fields can't be empty")
@@ -64,7 +64,7 @@ func validateEmptysPaciente(paciente *domain.Paciente) (bool, error) {
 // Post crea un nuevo paciente
 func (h *pacienteHandler) Post() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var paciente domain.Paciente
+		var paciente pacienteModel.Paciente
 		token := c.GetHeader("TOKEN")
 		if token == "" {
 			web.Failure(c, 401, errors.New("token not found"))
@@ -84,7 +84,7 @@ func (h *pacienteHandler) Post() gin.HandlerFunc {
 			web.Failure(c, 400, err)
 			return
 		}
-		p, err := h.s.Create(paciente)
+		p, err := h.CreatePaciente(paciente)
 		if err != nil {
 			web.Failure(c, 400, err)
 			return
@@ -111,7 +111,7 @@ func (h *pacienteHandler) Delete() gin.HandlerFunc {
 			web.Failure(c, 400, errors.New("invalid id"))
 			return
 		}
-		err = h.s.Delete(id)
+		err = h.DeletePaciente(id)
 		if err != nil {
 			web.Failure(c, 404, err)
 			return
@@ -138,7 +138,7 @@ func (h *pacienteHandler) Put() gin.HandlerFunc {
 			web.Failure(c, 400, errors.New("invalid id"))
 			return
 		}
-		_, err = h.s.GetByID(id)
+		_, err = h.GetPacienteByID(id)
 		if err != nil {
 			web.Failure(c, 404, errors.New("patient not found"))
 			return
@@ -147,7 +147,7 @@ func (h *pacienteHandler) Put() gin.HandlerFunc {
 			web.Failure(c, 409, err)
 			return
 		}
-		var paciente domain.Paciente
+		var paciente pacienteModel.Paciente
 		err = c.ShouldBindJSON(&paciente)
 		if err != nil {
 			web.Failure(c, 400, errors.New("invalid json"))
@@ -158,7 +158,7 @@ func (h *pacienteHandler) Put() gin.HandlerFunc {
 			web.Failure(c, 400, err)
 			return
 		}
-		p, err := h.s.Update(id, paciente)
+		p, err := h.UpdatePaciente(id, paciente)
 		if err != nil {
 			web.Failure(c, 409, err)
 			return
@@ -192,7 +192,7 @@ func (h *pacienteHandler) Patch() gin.HandlerFunc {
 			web.Failure(c, 400, errors.New("invalid id"))
 			return
 		}
-		_, err = h.s.GetByID(id)
+		_, err = h.GetPacienteByID(id)
 		if err != nil {
 			web.Failure(c, 404, errors.New("paciente not found"))
 			return
@@ -201,13 +201,13 @@ func (h *pacienteHandler) Patch() gin.HandlerFunc {
 			web.Failure(c, 400, errors.New("invalid json"))
 			return
 		}
-		update := domain.Paciente{
+		update := pacienteModel.Paciente{
 			DNI: r.DNI,
 			Nombre:    r.Nombre,
 			Apellido:  r.Apellido,
 			Domicilio: r.Domicilio,
 		}
-		p, err := h.s.Update(id, update)
+		p, err := h.UpdatePaciente(id, update)
 		if err != nil {
 			web.Failure(c, 409, err)
 			return

@@ -6,11 +6,10 @@ import (
 	"os"
 	"database/sql"
 
-	"github.com/Polox97/odontologia/cmd/server/handler"
+	"github.com/Polox97/odontologia/handler"
 	"github.com/Polox97/odontologia/pkg/store"
-	"github.com/Polox97/odontologia/internal/dentista"
-	"github.com/Polox97/odontologia/internal/paciente"
-	"github.com/Polox97/odontologia/internal/turno"
+	service "github.com/Polox97/odontologia/service"
+	repo "github.com/Polox97/odontologia/repository"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -37,19 +36,18 @@ func main() {
 	}
 
 	dStorage := store.NewSqlStoreDentista(db)
-	pStorage := store.NewSqlStorePaciente(db)
-	tStorage := store.NewSqlStoreTurno(db)
-
-	dRepo := dentista.NewRepository(dStorage)
-	dService := dentista.NewService(dRepo)
+	dRepo := repo.NewDentistaRepo(dStorage)
+	dService := service.NewDentistaService(dRepo)
 	dentistatHandler := handler.NewDentistaHandler(dService)
 
-	pRepo := paciente.NewRepository(pStorage)
-	pService := paciente.NewService(pRepo)
+	pStorage := store.NewSqlStorePaciente(db)
+	pRepo := repo.NewPacienteRepository(pStorage)
+	pService := service.NewPacienteService(pRepo)
 	pacienteHandler := handler.NewPacienteHandler(pService)
 
-	tRepo := turno.NewRepository(tStorage)
-	tService := turno.NewService(tRepo)
+	tStorage := store.NewSqlStoreTurno(db)
+	tRepo := repo.NewRepository(tStorage)
+	tService := service.NewService(tRepo)
 	turnoHandler := handler.NewTurnoHandler(tService)
 
 	r := gin.Default()

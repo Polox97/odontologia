@@ -3,20 +3,20 @@ package store
 import (
 	"database/sql"
 
-	"github.com/Polox97/odontologia/internal/domain"
+	turnoModel "github.com/Polox97/odontologia/model/turno"
 )
 
 type StoreInterfaceTurno interface {
 	// Read devuelve un turno por su id
-	Read(id int) (domain.Turno, error)
+	Read(id int) (turnoModel.Turno, error)
 	// Read devuelve los turnos de un paciente por su dni
-	ReadPaciente(dni string) ([]domain.TurnoResponse, error)
+	ReadPaciente(dni string) ([]turnoModel.TurnoResponse, error)
 	// ReadAll devuelve todos los turnos
-	ReadAll() ([]domain.Turno, error)
+	ReadAll() ([]turnoModel.Turno, error)
 	// Create agrega un nuevo turno
-	Create(paciente domain.Turno) error
+	Create(paciente turnoModel.Turno) error
 	// Update actualiza un turno
-	Update(paciente domain.Turno) error
+	Update(paciente turnoModel.Turno) error
 	// Delete elimina un turno
 	Delete(id int) error
 	// Exists verifica si un turno existe
@@ -37,24 +37,24 @@ func NewSqlStoreTurno(db *sql.DB) StoreInterfaceTurno {
 	}
 }
 
-func (s *sqlStoreT) Read(id int) (domain.Turno, error) {
-	var turno domain.Turno
+func (s *sqlStoreT) Read(id int) (turnoModel.Turno, error) {
+	var turno turnoModel.Turno
 	query := "SELECT * FROM turnos WHERE id = ?;"
 	row := s.db.QueryRow(query, id)
 	err := row.Scan(&turno.ID, &turno.PacienteID, &turno.DentistaID, &turno.FechaHora, &turno.Descripcion)
 	if err != nil {
-		return domain.Turno{}, err
+		return turnoModel.Turno{}, err
 	}
 	return turno, nil
 }
 
-func (s *sqlStoreT) ReadPaciente(dni string) ([]domain.TurnoResponse, error) {
+func (s *sqlStoreT) ReadPaciente(dni string) ([]turnoModel.TurnoResponse, error) {
 	query := "SELECT t.id, t.fecha_hora, t.descripcion, p.dni, p.nombre, p.apellido, p.domicilio, d.matricula, d.nombre, d.apellido from turnos t INNER JOIN pacientes p on p.id = t.paciente_id INNER JOIN dentistas d on d.id = t.dentista_id WHERE p.dni = ?;"
 	rows, err := s.db.Query(query, dni)
-	var turnos []domain.TurnoResponse
+	var turnos []turnoModel.TurnoResponse
 
 	for rows.Next() {
-		turno := domain.TurnoResponse{}
+		turno := turnoModel.TurnoResponse{}
 		err = rows.Scan(
 			&turno.ID,
 			&turno.FechaHora, 
@@ -70,28 +70,28 @@ func (s *sqlStoreT) ReadPaciente(dni string) ([]domain.TurnoResponse, error) {
 		turnos = append(turnos, turno)
 	}
 	if err != nil {
-		return []domain.TurnoResponse{}, err
+		return []turnoModel.TurnoResponse{}, err
 	}
 	return turnos, nil
 }
 
-func (s *sqlStoreT) ReadAll() ([]domain.Turno, error) {
+func (s *sqlStoreT) ReadAll() ([]turnoModel.Turno, error) {
 	query := "SELECT * FROM turnos"
 	rows, err := s.db.Query(query)
-	var turnos []domain.Turno
+	var turnos []turnoModel.Turno
 
 	for rows.Next() {
-		turno := domain.Turno{}
+		turno := turnoModel.Turno{}
 		err = rows.Scan(&turno.ID, &turno.PacienteID, &turno.DentistaID, &turno.FechaHora, &turno.Descripcion)
 		turnos = append(turnos, turno)
 	}
 	if err != nil {
-		return []domain.Turno{}, err
+		return []turnoModel.Turno{}, err
 	}
 	return turnos, nil
 }
 
-func (s *sqlStoreT) Create(turno domain.Turno) error {
+func (s *sqlStoreT) Create(turno turnoModel.Turno) error {
 	query := "INSERT INTO turnos (paciente_id, dentista_id, fecha_hora, descripcion) VALUES (?, ?, ?, ?);"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -108,7 +108,7 @@ func (s *sqlStoreT) Create(turno domain.Turno) error {
 	return nil
 }
 
-func (s *sqlStoreT) Update(turno domain.Turno) error {
+func (s *sqlStoreT) Update(turno turnoModel.Turno) error {
 	query := "UPDATE turnos SET paciente_id = ?, dentista_id = ?, fecha_hora = ?, descripcion = ? WHERE id = ?;"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {

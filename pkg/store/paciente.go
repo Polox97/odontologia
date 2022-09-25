@@ -3,18 +3,18 @@ package store
 import (
 	"database/sql"
 
-	"github.com/Polox97/odontologia/internal/domain"
+	pacienteModel "github.com/Polox97/odontologia/model/paciente"
 )
 
 type StoreInterfacePaciente interface {
 	// Read devuelve un paciente por su id
-	Read(id int) (domain.Paciente, error)
+	Read(id int) (pacienteModel.Paciente, error)
 	// ReadAll devuelve todos los pacientes
-	ReadAll() ([]domain.Paciente, error)
+	ReadAll() ([]pacienteModel.Paciente, error)
 	// Create agrega un nuevo paciente
-	Create(paciente domain.Paciente) error
+	Create(paciente pacienteModel.Paciente) error
 	// Update actualiza un paciente
-	Update(paciente domain.Paciente) error
+	Update(paciente pacienteModel.Paciente) error
 	// Delete elimina un paciente
 	Delete(id int) error
 	// Exists verifica si un paciente existe
@@ -31,34 +31,34 @@ func NewSqlStorePaciente(db *sql.DB) StoreInterfacePaciente {
 	}
 }
 
-func (s *sqlStoreP) Read(id int) (domain.Paciente, error) {
-	var paciente domain.Paciente
+func (s *sqlStoreP) Read(id int) (pacienteModel.Paciente, error) {
+	var paciente pacienteModel.Paciente
 	query := "SELECT * FROM pacientes WHERE id = ?;"
 	row := s.db.QueryRow(query, id)
 	err := row.Scan(&paciente.ID, &paciente.DNI, &paciente.Nombre, &paciente.Apellido, &paciente.Domicilio, &paciente.FechaAlta)
 	if err != nil {
-		return domain.Paciente{}, err
+		return pacienteModel.Paciente{}, err
 	}
 	return paciente, nil
 }
 
-func (s *sqlStoreP) ReadAll() ([]domain.Paciente, error) {
+func (s *sqlStoreP) ReadAll() ([]pacienteModel.Paciente, error) {
 	query := "SELECT * FROM pacientes"
 	rows, err := s.db.Query(query)
-	var pacientes []domain.Paciente
+	var pacientes []pacienteModel.Paciente
 
 	for rows.Next() {
-		paciente := domain.Paciente{}
+		paciente := pacienteModel.Paciente{}
 		err = rows.Scan(&paciente.ID, &paciente.DNI, &paciente.Nombre, &paciente.Apellido, &paciente.Domicilio, &paciente.FechaAlta)
 		pacientes = append(pacientes, paciente)
 	}
 	if err != nil {
-		return []domain.Paciente{}, err
+		return []pacienteModel.Paciente{}, err
 	}
 	return pacientes, nil
 }
 
-func (s *sqlStoreP) Create(paciente domain.Paciente) error {
+func (s *sqlStoreP) Create(paciente pacienteModel.Paciente) error {
 	query := "INSERT INTO pacientes (dni, nombre, apellido, domicilio) VALUES (?, ?, ?, ?);"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -75,7 +75,7 @@ func (s *sqlStoreP) Create(paciente domain.Paciente) error {
 	return nil
 }
 
-func (s *sqlStoreP) Update(paciente domain.Paciente) error {
+func (s *sqlStoreP) Update(paciente pacienteModel.Paciente) error {
 	query := "UPDATE pacientes SET dni = ?, nombre = ?, apellido = ?, domicilio = ?, fecha_alta = ? WHERE id = ?;"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {

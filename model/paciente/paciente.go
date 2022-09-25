@@ -1,4 +1,4 @@
-package domain
+package paciente
 
 type Paciente struct {
 	ID        int    `json:"id"`

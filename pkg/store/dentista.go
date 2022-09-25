@@ -3,18 +3,18 @@ package store
 import (
 	"database/sql"
 
-	"github.com/Polox97/odontologia/internal/domain"
+	dentistaModel "github.com/Polox97/odontologia/model/dentista"
 )
 
 type StoreInterfaceDentista interface {
 	// Read devuelve un dentista por su id
-	Read(id int) (domain.Dentista, error)
+	Read(id int) (dentistaModel.Dentista, error)
 	// ReadAll devuelve todos los dentistas
-	ReadAll() ([]domain.Dentista, error)
+	ReadAll() ([]dentistaModel.Dentista, error)
 	// Create agrega un nuevo dentista
-	Create(dentista domain.Dentista) error
+	Create(dentista dentistaModel.Dentista) error
 	// Update actualiza un dentista
-	Update(dentista domain.Dentista) error
+	Update(dentista dentistaModel.Dentista) error
 	// Delete elimina un dentista
 	Delete(id int) error
 	// Exists verifica si un dentista existe
@@ -31,34 +31,34 @@ func NewSqlStoreDentista(db *sql.DB) StoreInterfaceDentista {
 	}
 }
 
-func (s *sqlStoreD) Read(id int) (domain.Dentista, error) {
-	var dentista domain.Dentista
+func (s *sqlStoreD) Read(id int) (dentistaModel.Dentista, error) {
+	var dentista dentistaModel.Dentista
 	query := "SELECT * FROM dentistas WHERE id = ?;"
 	row := s.db.QueryRow(query, id)
 	err := row.Scan(&dentista.ID, &dentista.Matricula, &dentista.Nombre, &dentista.Apellido)
 	if err != nil {
-		return domain.Dentista{}, err
+		return dentistaModel.Dentista{}, err
 	}
 	return dentista, nil
 }
 
-func (s *sqlStoreD) ReadAll() ([]domain.Dentista, error) {
+func (s *sqlStoreD) ReadAll() ([]dentistaModel.Dentista, error) {
 	query := "SELECT * FROM dentistas"
 	rows, err := s.db.Query(query)
-	var dentistas []domain.Dentista
+	var dentistas []dentistaModel.Dentista
 
 	for rows.Next() {
-		dentista := domain.Dentista{}
+		dentista := dentistaModel.Dentista{}
 		err = rows.Scan(&dentista.ID, &dentista.Matricula, &dentista.Nombre, &dentista.Apellido)
 		dentistas = append(dentistas, dentista)
 	}
 	if err != nil {
-		return []domain.Dentista{}, err
+		return []dentistaModel.Dentista{}, err
 	}
 	return dentistas, nil
 }
 
-func (s *sqlStoreD) Create(dentista domain.Dentista) error {
+func (s *sqlStoreD) Create(dentista dentistaModel.Dentista) error {
 	query := "INSERT INTO dentistas (matricula, nombre, apellido) VALUES (?, ?, ?);"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
@@ -75,7 +75,7 @@ func (s *sqlStoreD) Create(dentista domain.Dentista) error {
 	return nil
 }
 
-func (s *sqlStoreD) Update(dentista domain.Dentista) error {
+func (s *sqlStoreD) Update(dentista dentistaModel.Dentista) error {
 	query := "UPDATE dentistas SET matricula = ?, nombre = ?, apellido = ? WHERE id = ?;"
 	stmt, err := s.db.Prepare(query)
 	if err != nil {
